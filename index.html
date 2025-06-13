@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>파이썬코딩문제</title>
+  <link rel="stylesheet" href="styles1.css">
+  <!-- Firebase Configuration -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_x2mrgYdkYLOu5OOkNsEskTFRnC8urfM",
+      authDomain: "pyqz-80d0a.firebaseapp.com",
+      databaseURL: "https://pyqz-80d0a-default-rtdb.firebaseio.com",
+      projectId: "pyqz-80d0a",
+      storageBucket: "pyqz-80d0a.firebasestorage.app",
+      messagingSenderId: "54702389083",
+      appId: "1:54702389083:web:9d9cf2ef71bfcface58c7e",
+      measurementId: "G-SBQS5WB6GF"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Export for use in other scripts
+    window.firebase = firebase;
+    window.database = database;
+  </script>
+</head>
+<body>
+  <header>
+    <h1>파이썬코딩문제</h1>
+  </header>
+  <main>
+    <!-- 초기 화면 (로그인) -->
+    <div id="home" class="section active">
+      <h2>로그인</h2>
+      <form onsubmit="loginUser(); event.preventDefault();">
+        <input type="text" id="loginUserId" placeholder="아이디" required minlength="4">
+        <input type="password" id="loginUserPassword" placeholder="비밀번호" required minlength="6">
+        <p id="loginError" style="display: none; color: #dc3545;"></p>
+        <button type="submit">로그인</button>
+      </form>
+      <button onclick="showSection('register')">회원가입</button>
+      <button onclick="showSection('adminLogin')">관리자 모드</button>
+    </div>
+
+    <!-- 회원가입 -->
+    <div id="register" class="section">
+      <h2>회원가입</h2>
+      <input type="text" id="registerUserName" placeholder="이름" required minlength="2" maxlength="50">
+      <input type="text" id="registerUserId" placeholder="아이디" required minlength="4" pattern="[a-zA-Z0-9]+">
+      <input type="password" id="registerUserPassword" placeholder="비밀번호" required minlength="6">
+      <button id="registerButton" onclick="registerUser()">회원가입</button>
+      <p id="registerResult" style="display: none;"></p>
+      <button id="backButton" onclick="showSection('home')">뒤로</button>
+    </div>
+
+    <!-- 관리자 로그인 -->
+    <div id="adminLogin" class="section">
+      <h2>관리자 모드</h2>
+      <input type="password" id="adminPassword" placeholder="관리자 비밀번호" required>
+      <button onclick="loginAdmin()">로그인</button>
+      <button onclick="showSection('home')">뒤로</button>
+    </div>
+
+    <!-- 관리자 퀴즈 관리 -->
+    <div id="adminMode" class="section">
+      <h2>퀴즈 관리</h2>
+      <select id="quizType" onchange="toggleOptions()">
+        <option value="subjective">주관식</option>
+        <option value="objective">객관식</option>
+      </select>
+      <textarea id="quizQuestion" placeholder="문제" rows="4" required></textarea>
+      <input type="text" id="quizAnswer" placeholder="정답" required>
+      <div id="options" style="display: none;">
+        <input type="text" id="optionA" placeholder="보기 1" required>
+        <input type="text" id="optionB" placeholder="보기 2" required>
+        <input type="text" id="optionC" placeholder="보기 3" required>
+        <input type="text" id="optionD" placeholder="보기 4" required>
+      </div>
+      <button onclick="addQuiz()">문제 추가</button>
+      <div id="adminQuizList"></div>
+      <h2>퀴즈 푼 사용자</h2>
+      <div id="userList"></div>
+      <button onclick="showSection('adminHistory')">문제 풀이 기록 보기</button>
+      <button onclick="logoutAdmin()">로그아웃</button>
+    </div>
+
+    <div id="adminHistory" class="section" style="display: none;">
+      <h2>문제 풀이 기록</h2>
+      <div id="historyList"></div>
+      <button onclick="showSection('adminMode')">뒤로</button>
+    </div>
+
+    <!-- 퀴즈 풀이 -->
+    <div id="quizMode" class="section">
+      <h2>퀴즈 풀이</h2>
+      <div id="currentQuestion"></div>
+      <p id="quizResult"></p>
+      <input type="text" id="userAnswer" placeholder="정답 입력">
+      <div class="button-container">
+        <button id="submitButton" onclick="submitAnswer()">제출</button>
+        <button id="nextButton" onclick="nextQuestion()" style="display: none;">다음 문제</button>
+        <button id="endButton" onclick="endQuiz()" style="display: none;">끝내기</button>
+      </div>
+      <div class="logout-container">
+        <button onclick="logoutUser()">로그아웃</button>
+      </div>
+    </div>
+
+    <div id="loading" class="loading" style="display: none;">로딩 중...</div>
+  </main>
+  <script src="script1.js"></script>
+</body>
+</html>

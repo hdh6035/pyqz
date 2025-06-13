@@ -1,0 +1,243 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f0f0f0;
+}
+
+header {
+  background-color: #333;
+  color: white;
+  width: 100%;
+  text-align: center;
+  padding: 1rem;
+}
+
+main {
+  max-width: 800px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.section {
+  display: none;
+  margin-top: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.section.active {
+  display: block;
+  opacity: 1;
+}
+
+input, button, select, textarea {
+  padding: 10px;
+  margin: 5px 10px;
+  font-size: 16px;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+textarea[id^="option"] {
+  min-height: 50px;
+}
+
+button {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 100px;
+  padding: 10px 20px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button:focus, input:focus, select:focus, textarea:focus {
+  outline: 2px solid #007BFF;
+  outline-offset: 2px;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* 버튼을 수직으로 배치 */
+#quizMode .button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+#quizMode button {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+.logout-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* "정답입니다" 텍스트를 보기 아래로 이동 */
+#quizResult {
+  margin-top: 10px;
+  text-align: center;
+  color: #28a745;
+  font-weight: bold;
+}
+
+.logout-container button {
+  display: block;
+  margin: 10px auto 0 auto;
+}
+
+#quizList, #adminQuizList, #userList {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.quiz-item, .user-item {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.history-item {
+  margin: 5px 0;
+  padding: 5px;
+  background-color: #f9f9f9;
+  border-left: 3px solid;
+}
+
+.history-item.correct {
+  border-left-color: #2e7d32;
+}
+
+.history-item.incorrect {
+  border-left-color: #c62828;
+}
+
+#registerResult, #loginError {
+  color: #28a745;
+  font-weight: bold;
+  margin-top: 10px;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+#options {
+  margin-top: 10px;
+}
+
+.options-container {
+  display: inline-block;
+  text-align: left;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 0px; /* 간격 제거 */
+  margin: 5px 0;
+}
+
+.option-item input[type="radio"] {
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  outline: none;
+  box-shadow: none;
+  appearance: none;
+  border: 1px solid #000;
+  border-radius: 50%;
+  position: relative;
+}
+
+.option-item input[type="radio"]:checked {
+  background-color: #007BFF;
+}
+
+.option-item input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: white;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.option-item input[type="radio"]:focus {
+  outline: 1px solid #007BFF;
+  outline-offset: 0px;
+  box-shadow: 0 0 2px 1px rgba(0, 123, 255, 0.5);
+}
+
+.option-item label {
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.loading {
+  display: none;
+  font-size: 14px;
+  color: #007BFF;
+  margin-top: 10px;
+}
+
+.loading.active {
+  display: block;
+}
+
+@media (max-width: 600px) {
+  input, button, select, textarea {
+    font-size: 14px;
+  }
+  h1 {
+    font-size: 1.5rem;
+  }
+  h2 {
+    font-size: 1.2rem;
+  }
+  .options-container {
+    max-width: none;
+  }
+  .option-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-left: 10px;
+  }
+  .option-item label {
+    margin-left: 0;
+  }
+}
