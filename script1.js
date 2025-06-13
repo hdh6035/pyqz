@@ -370,13 +370,13 @@ function submitAnswer() {
     timestamp: timestamp,
     isCorrect: isCorrect
   });
-  localStorage.setItem('quizHistory', JSON.stringify(quizHistory));
+  saveToFirebase('history', quizHistory);
 
   // 사용자 기록 업데이트
   if (users[currentUser]) {
     users[currentUser].quizHistory.push({ question: quiz.question, userAnswer, correctAnswer: quiz.answer, timestamp, isCorrect });
     if (isCorrect) users[currentUser].score += 10;
-    saveToLocalStorage('users', users);
+    saveToFirebase('users', users);
   }
 
   // 결과 표시
