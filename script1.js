@@ -107,7 +107,7 @@ function registerUser() {
   }
 
   users[userId] = { name: userName, password, score: 0, quizHistory: [] };
-  if (!saveToLocalStorage('users', users)) {
+  if (!saveToFirebase('users', users)) {
     document.getElementById('registerResult').textContent = '데이터 저장에 실패했습니다. 브라우저 저장공간을 확인해 주세요.';
     document.getElementById('registerResult').style.color = '#dc3545';
     document.getElementById('registerResult').style.display = 'block';
@@ -211,7 +211,7 @@ function addQuiz() {
   }
 
   quizzes.push(quiz);
-  if (!saveToLocalStorage('quizzes', quizzes)) {
+  if (!saveToFirebase('quizzes', quizzes)) {
     alert('문제 저장에 실패했습니다. 다시 시도해 주세요.');
     return;
   }
@@ -252,7 +252,7 @@ function resetUserHistory(userId) {
   if (users[userId]) {
     users[userId].quizHistory = [];
     users[userId].score = 0;
-    if (!saveToLocalStorage('users', users)) {
+    if (!saveToFirebase('users', users)) {
       alert('사용자 기록 초기화에 실패했습니다.');
     }
     displayUserList();
