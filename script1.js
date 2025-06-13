@@ -340,22 +340,24 @@ function nextQuestion() {
   if (quiz.type === 'objective') {
     let optionsHTML = `<p>${quiz.question.replace(/\n/g, '<br>')}</p>`;
     optionsHTML += '<div class="options-container">';
-    // 옵션 문자열 HTML 엔티티 변환 함수
-    function escapeHtml(str) {
-      return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+    // 옵션 문자열 HTML 엔티티 변환 함수 (전역에 이미 존재할 수 있으므로 하나만 정의)
+    if (typeof escapeHtml === 'undefined') {
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
     }
     quiz.options.forEach((opt, idx) => {
       const safeVal = escapeHtml(opt);
       optionsHTML += `
-        <div class="option-item">
-          <input type="radio" name="option" id="option${idx}" value="${safeVal}">
-          <label for="option${idx}">${String.fromCharCode(97 + idx)}. ${opt.replace(/\n/g, ' ')}</label>
-        </div>`;
+        <label class="option-item">
+          <input type="radio" name="option" value="${safeVal}">
+          ${String.fromCharCode(97 + idx)}. ${opt.replace(/\n/g, ' ')}
+        </label>`;
     });
     optionsHTML += '</div>';
     document.getElementById('currentQuestion').innerHTML = optionsHTML;
