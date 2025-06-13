@@ -31,7 +31,7 @@ function initializeFirebaseData() {
   });
 }
 
-// 데이터 저장 함수
+// 데이터 저장 함수 (Firebase)
 function saveToFirebase(key, data) {
   try {
     const ref = {
@@ -39,13 +39,8 @@ function saveToFirebase(key, data) {
       'users': usersRef,
       'history': historyRef
     }[key];
-    
     if (ref) {
-      if (Array.isArray(data)) {
-        ref.set(data);
-      } else {
-        ref.set(data);
-      }
+      ref.set(data);
       return true;
     }
   } catch (e) {
@@ -53,6 +48,20 @@ function saveToFirebase(key, data) {
     return false;
   }
   return false;
+}
+
+// 호환성을 위한 saveToLocalStorage 함수
+function saveToLocalStorage(key, data) {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(data));
+    }
+  } catch (e) {
+    console.warn('localStorage 저장 실패:', e);
+  }
+  // Firebase에도 동시 저장
+  saveToFirebase(key, data);
+  return true;
 }
 
 function showSection(sectionId) {
@@ -107,7 +116,7 @@ function registerUser() {
   }
 
   users[userId] = { name: userName, password, score: 0, quizHistory: [] };
-  if (!saveToFirebase('users', users)) {
+  if (!saveToLocalStorage('users', users)) {
     document.getElementById('registerResult').textContent = '데이터 저장에 실패했습니다. 브라우저 저장공간을 확인해 주세요.';
     document.getElementById('registerResult').style.color = '#dc3545';
     document.getElementById('registerResult').style.display = 'block';
@@ -252,7 +261,7 @@ function resetUserHistory(userId) {
   if (users[userId]) {
     users[userId].quizHistory = [];
     users[userId].score = 0;
-    if (!saveToFirebase('users', users)) {
+    if (!saveToLocalStorage('users', users)) {
       alert('사용자 기록 초기화에 실패했습니다.');
     }
     displayUserList();
@@ -363,6 +372,9 @@ function submitAnswer() {
   const timestamp = now.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 
   // 기록 저장
+  if (!Array.isArray(quizHistory)) {
+    quizHistory = [];
+  }
   quizHistory.push({
     question: quiz.question,
     userAnswer: userAnswer,
@@ -370,14 +382,18 @@ function submitAnswer() {
     timestamp: timestamp,
     isCorrect: isCorrect
   });
-  saveToFirebase('history', quizHistory);
+  saveToLocalStorage('history', quizHistory);
 
   // 사용자 기록 업데이트
-  if (users[currentUser]) {
-    users[currentUser].quizHistory.push({ question: quiz.question, userAnswer, correctAnswer: quiz.answer, timestamp, isCorrect });
-    if (isCorrect) users[currentUser].score += 10;
-    saveToFirebase('users', users);
+  if (!users[currentUser]) {
+    users[currentUser] = { name: currentUser, password: '', score: 0, quizHistory: [] };
   }
+  if (!Array.isArray(users[currentUser].quizHistory)) {
+    users[currentUser].quizHistory = [];
+  }
+  users[currentUser].quizHistory.push({ question: quiz.question, userAnswer, correctAnswer: quiz.answer, timestamp, isCorrect });
+  if (isCorrect) users[currentUser].score += 10;
+  saveToLocalStorage('users', users);
 
   // 결과 표시
   document.getElementById('quizResult').textContent = isCorrect ? '정답입니다!' : '오답입니다. 정답은 ' + quiz.answer + '입니다.';
