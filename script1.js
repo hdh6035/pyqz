@@ -5,21 +5,82 @@ let currentQuestionIndex = -1;
 let remainingQuestions = []; // 아직 풀지 않은 문제
 let quizHistory = [];
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyC_x2mrgYdkYLOu5OOkNsEskTFRnC8urfM",
-  authDomain: "pyqz-80d0a.firebaseapp.com",
-  databaseURL: "https://pyqz-80d0a-default-rtdb.firebaseio.com",
-  projectId: "pyqz-80d0a",
-  storageBucket: "pyqz-80d0a.firebasestorage.app",
-  messagingSenderId: "54702389083",
-  appId: "1:54702389083:web:9d9cf2ef71bfcface58c7e",
-  measurementId: "G-SBQS5WB6GF"
-};
+// Firebase 초기화 함수
+async function initializeFirebase() {
+  try {
+    // Firebase SDK가 로드되었는지 확인
+    if (!window.firebase) {
+      throw new Error('Firebase SDK가 로드되지 않았습니다.');
+    }
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+    // Firebase 초기화
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_x2mrgYdkYLOu5OOkNsEskTFRnC8urfM",
+      authDomain: "pyqz-80d0a.firebaseapp.com",
+      databaseURL: "https://pyqz-80d0a-default-rtdb.firebaseio.com",
+      projectId: "pyqz-80d0a",
+      storageBucket: "pyqz-80d0a.firebasestorage.app",
+      messagingSenderId: "54702389083",
+      appId: "1:54702389083:web:9d9cf2ef71bfcface58c7e",
+      measurementId: "G-SBQS5WB6GF"
+    };
+
+    // Firebase 앱이 이미 초기화되어 있는지 확인
+    if (!window.firebase.apps.length) {
+      window.firebase.initializeApp(firebaseConfig);
+    }
+
+    // Firebase 데이터베이스 참조
+    const database = window.firebase.database();
+    return database;
+  } catch (error) {
+    console.error('Firebase 초기화 오류:', error);
+    throw error;
+  }
+}
+
+// Firebase 초기화 후 실행할 함수
+async function setupFirebase() {
+  try {
+    const database = await initializeFirebase();
+    
+    // Firebase 데이터베이스 참조
+    const quizzesRef = database.ref('quizzes');
+    const usersRef = database.ref('users');
+    const historyRef = database.ref('history');
+    const adminRef = database.ref('admin');
+
+    // 관리자 인증 상태
+    let isAdminAuthenticated = false;
+
+    // Firebase 데이터 초기화
+    function initializeFirebaseData() {
+      // 퀴즈 데이터 불러오기
+      quizzesRef.once('value').then(snapshot => {
+        const data = snapshot.val();
+        if (Array.isArray(data)) {
+          quizzes = data.filter(item => 
+            typeof item === 'object' && 
+            item !== null && 
+            typeof item.question === 'string' && 
+            typeof item.answer === 'string'
+          );
+        } else {
+          quizzes = [];
+        }
+      });
+    }
+
+    // Firebase 초기화 완료 후 데이터 로드
+    initializeFirebaseData();
+
+  } catch (error) {
+    console.error('Firebase 설정 오류:', error);
+  }
+}
+
+// DOM이 완전히 로드된 후 Firebase 설정 실행
+window.addEventListener('load', setupFirebase);
 
 // Firebase 데이터베이스 참조
 const quizzesRef = database.ref('quizzes');
