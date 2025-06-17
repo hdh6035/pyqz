@@ -47,84 +47,81 @@ let usersRef;
 let historyRef;
 let adminRef;
 
+// Firebase 데이터 초기화 함수
+function initializeFirebaseData() {
+  // 퀴즈 데이터 불러오기
+  quizzesRef.once('value').then(snapshot => {
+    const data = snapshot.val();
+    if (Array.isArray(data)) {
+      quizzes = data.filter(item => 
+        typeof item === 'object' && 
+        item !== null && 
+        typeof item.question === 'string' && 
+        typeof item.answer === 'string'
+      );
+    } else {
+      quizzes = [];
+    }
+    if (currentUser) {
+      // 남은 문제 초기화
+      remainingQuestions = quizzes.map(q => ({ ...q }));
+      saveToLocalStorage('remainingQuestions', remainingQuestions);
+    }
+  });
+
+  // 사용자 데이터 불러오기
+  usersRef.once('value').then(snapshot => {
+    users = snapshot.val() || {};
+    Object.keys(users).forEach(userId => {
+      if (!users[userId].quizHistory) {
+        users[userId].quizHistory = [];
+      }
+    });
+  });
+
+  // 관리자 비밀번호 초기화
+  adminRef.once('value').then(snapshot => {
+    const adminData = snapshot.val();
+    if (!adminData) {
+      adminRef.set({
+        password: 'admin123',
+        lastModified: new Date().toISOString()
+      });
+    }
+  });
+
+  // 히스토리 데이터 불러오기
+  historyRef.once('value').then(snapshot => {
+    const historyData = snapshot.val() || {};
+    Object.keys(historyData).forEach(key => {
+      const history = historyData[key];
+      if (history.userId && history.question && history.userAnswer) {
+        if (!users[history.userId]) {
+          users[history.userId] = {
+            name: history.userId,
+            score: 0,
+            quizHistory: []
+          };
+        }
+        users[history.userId].quizHistory.push(history);
+      }
+    });
+  });
+}
+
 // Firebase 초기화 후 실행할 함수
 async function setupFirebase() {
   try {
     database = await initializeFirebase();
     
     // Firebase 데이터베이스 참조
-    const quizzesRef = database.ref('quizzes');
-    const usersRef = database.ref('users');
-    const historyRef = database.ref('history');
-    const adminRef = database.ref('admin');
-
-    // 관리자 인증 상태
-    let isAdminAuthenticated = false;
-
-    // Firebase 데이터 초기화
-    function initializeFirebaseData() {
-      // 퀴즈 데이터 불러오기
-      quizzesRef.once('value').then(snapshot => {
-        const data = snapshot.val();
-        if (Array.isArray(data)) {
-          quizzes = data.filter(item => 
-            typeof item === 'object' && 
-            item !== null && 
-            typeof item.question === 'string' && 
-            typeof item.answer === 'string'
-          );
-        } else {
-          quizzes = [];
-        }
-        if (currentUser) {
-          // 남은 문제 초기화
-          remainingQuestions = quizzes.map(q => ({ ...q }));
-          saveToLocalStorage('remainingQuestions', remainingQuestions);
-        }
-      });
-
-      // 사용자 데이터 불러오기
-      usersRef.once('value').then(snapshot => {
-        users = snapshot.val() || {};
-        Object.keys(users).forEach(userId => {
-          if (!users[userId].quizHistory) {
-            users[userId].quizHistory = [];
-          }
-        });
-      });
-
-      // 관리자 비밀번호 초기화
-      adminRef.once('value').then(snapshot => {
-        const adminData = snapshot.val();
-        if (!adminData) {
-          adminRef.set({
-            password: 'admin123',
-            lastModified: new Date().toISOString()
-          });
-        }
-      });
-
-      // 히스토리 데이터 불러오기
-      historyRef.once('value').then(snapshot => {
-        const historyData = snapshot.val() || {};
-        Object.keys(historyData).forEach(key => {
-          const history = historyData[key];
-          if (history.userId && history.question && history.userAnswer) {
-            if (!users[history.userId]) {
-              users[history.userId] = {
-                name: history.userId,
-                score: 0,
-                quizHistory: []
-              };
-            }
-            users[history.userId].quizHistory.push(history);
-          }
-        });
-      });
-    }
+    quizzesRef = database.ref('quizzes');
+    usersRef = database.ref('users');
+    historyRef = database.ref('history');
+    adminRef = database.ref('admin');
 
     // Firebase 초기화 완료 후 데이터 로드
-    initializeFirebaseData();
+    await initializeFirebaseData();
 
   } catch (error) {
     console.error('Firebase 설정 오류:', error);
