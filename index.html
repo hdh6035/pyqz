@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>파이썬코딩문제</title>
   <link rel="stylesheet" href="styles1.css">
-  <!-- Firebase SDK v9 -->
+  <!-- Firebase 호스팅 -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
   <script>
     // Firebase 초기화
     const firebaseConfig = {
@@ -18,68 +19,13 @@
       projectId: "python-quiz-app",
       storageBucket: "python-quiz-app.appspot.com",
       messagingSenderId: "1234567890",
-      appId: "1:1234567890:web:abcdef1234567890"
+      appId: "1:1234567890:web:abcdef1234567890",
+      measurementId: "G-XXXXXXXXXX" // Firebase Analytics를 사용하려면 measurementId 추가
     };
     
-    // Firebase 초기화
-    if (!window.firebase) {
-      window.firebase = {
-        initializeApp: function(config) {
-          return {
-            auth: function() {
-              return {
-                onAuthStateChanged: function(callback) {
-                  // 인증 상태 변경 이벤트 리스너
-                  window.addEventListener('load', () => {
-                    const user = localStorage.getItem('currentUser');
-                    callback(user ? JSON.parse(user) : null);
-                  });
-                },
-                signInWithEmailAndPassword: function(email, password) {
-                  return new Promise((resolve, reject) => {
-                    // 실제 Firebase 인증 대신 로컬 스토리지 사용
-                    const users = JSON.parse(localStorage.getItem('users') || '{}');
-                    const user = Object.values(users).find(u => u.email === email);
-                    
-                    if (user && user.password === password) {
-                      localStorage.setItem('currentUser', JSON.stringify(user));
-                      resolve({ user });
-                    } else {
-                      reject(new Error('Invalid credentials'));
-                    }
-                  });
-                },
-                signOut: function() {
-                  return new Promise(resolve => {
-                    localStorage.removeItem('currentUser');
-                    resolve();
-                  });
-                }
-              };
-            },
-            database: function() {
-              return {
-                ref: function(path) {
-                  return {
-                    once: function(eventType, callback) {
-                      // 실제 Firebase 데이터베이스 대신 로컬 스토리지 사용
-                      const data = JSON.parse(localStorage.getItem(path) || '{}');
-                      callback(data);
-                    },
-                    set: function(value) {
-                      localStorage.setItem(path, JSON.stringify(value));
-                    }
-                  };
-                }
-              };
-            }
-          };
-        }
-      };
-    }
-    
     // Firebase 앱 초기화
-    window.firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
   </script>
   <script>
     // Firebase 초기화
