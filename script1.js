@@ -13,6 +13,8 @@ async function initializeFirebase() {
     if (!window.firebase) {
       throw new Error('Firebase SDK가 로드되지 않았습니다.');
     }
+    
+    // Firebase 초기화
     const firebaseConfig = {
       apiKey: "AIzaSyDyYXxXxXxXxXxXxXxXxXxXxXxXxX",
       authDomain: "python-quiz-app.firebaseapp.com",
@@ -22,12 +24,14 @@ async function initializeFirebase() {
       messagingSenderId: "1234567890",
       appId: "1:1234567890:web:abcdef1234567890"
     };
+    
+    // Firebase 앱 초기화
     if (!window.firebase.apps.length) {
       window.firebase.initializeApp(firebaseConfig);
     }
     
     // Firebase Authentication 초기화
-    auth = window.firebase.auth();
+    const auth = window.firebase.auth();
     
     // 인증 상태 변경 이벤트 리스너
     auth.onAuthStateChanged(user => {
@@ -40,6 +44,7 @@ async function initializeFirebase() {
       }
     });
     
+    // Firebase 데이터베이스 초기화
     const database = window.firebase.database();
     
     // userId 인덱스 설정
