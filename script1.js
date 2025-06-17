@@ -280,8 +280,57 @@ function loginUser() {
     ).map(q => ({ ...q }));
     saveToLocalStorage('remainingQuestions', remainingQuestions);
 
+    // 퀴즈 풀이 화면으로 이동
     showSection('quizMode');
     nextQuestion();
+
+    // 푼 문제 기록 표시
+    const userHistoryDisplay = document.getElementById('userHistoryDisplay');
+    const userHistoryList = document.getElementById('userHistoryList');
+    if (userHistoryDisplay && userHistoryList) {
+      userHistoryDisplay.style.display = 'block';
+      userHistoryList.innerHTML = userHistory.map(history => {
+        // Firebase에서 저장된 날짜를 ISO 문자열로 변환
+        let date;
+        if (typeof history.date === 'number') {
+          // 타임스탬프인 경우
+          date = new Date(history.date * 1000);
+        } else if (typeof history.date === 'string') {
+          // ISO 문자열인 경우
+          date = new Date(history.date);
+        } else if (history.date && typeof history.date.toDate === 'function') {
+          // Firebase Timestamp 객체인 경우
+          date = history.date.toDate();
+        } else {
+          // 기본 날짜
+          date = new Date();
+        }
+
+        // 한국 시간으로 변환
+        const options = { 
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+          timeZone: 'Asia/Seoul'
+        };
+
+        // 날짜 형식을 YYYY-MM-DD HH:mm:ss로 표시
+        const formattedDate = date.toLocaleString('ko-KR', options);
+        
+        return `
+          <div class="user-history-item">
+            <div class="user-history-question">문제: ${history.question}</div>
+            <div class="user-history-answer">정답: ${history.answer}</div>
+            <div class="user-history-user-answer">내 답: ${history.userAnswer}</div>
+            <div class="user-history-date">날짜: ${formattedDate}</div>
+          </div>
+        `;
+      }).join('');
+    }
   }).catch(error => {
     console.error('로그인 오류:', error);
     alert('로그인 중 오류가 발생했습니다.');
