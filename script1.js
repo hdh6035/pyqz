@@ -41,6 +41,11 @@ async function initializeFirebase() {
 
 // Firebase 데이터베이스 참조 변수
 let database = null;
+// Firebase 데이터베이스 참조
+let quizzesRef;
+let usersRef;
+let historyRef;
+let adminRef;
 
 // Firebase 초기화 후 실행할 함수
 async function setupFirebase() {
@@ -924,7 +929,5 @@ function showAdminTab(tabId) {
   });
 }
 
-// 페이지 로드 시 Firebase 초기화
-window.addEventListener('load', () => {
-  initializeFirebaseData();
-});
+// Firebase 초기화 및 데이터 로드는 setupFirebase에서 처리됩니다
+// 중복된 로드 이벤트 리스너 제거
