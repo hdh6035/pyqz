@@ -554,6 +554,48 @@ button:disabled {
   display: block;
 }
 
+#userHistoryDisplay {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 1rem;
+}
+
+#userHistoryDisplay h3 {
+  margin: 0 0 1rem 0;
+  color: #2c3e50;
+}
+
+.user-history-item {
+  padding: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.user-history-item:last-child {
+  border-bottom: none;
+}
+
+.user-history-question {
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.user-history-answer {
+  color: #28a745;
+  margin: 0.5rem 0;
+}
+
+.user-history-user-answer {
+  color: #dc3545;
+  margin: 0.5rem 0;
+}
+
+.user-history-date {
+  color: #6c757d;
+  font-size: 0.9em;
+  margin: 0.5rem 0;
+}
+
 @media (max-width: 600px) {
   input, button, select, textarea {
     font-size: 14px;
