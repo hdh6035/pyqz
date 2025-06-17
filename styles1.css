@@ -5,26 +5,275 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #f0f0f0;
+  background-color: #f8f9fa;
+  min-height: 100vh;
 }
 
 header {
-  background-color: #333;
+  background-color: #2c3e50;
   color: white;
   width: 100%;
   text-align: center;
   padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 main {
-  max-width: 800px;
-  padding: 1rem;
+  padding: 2rem 1rem;
   text-align: center;
+  width: 100%;
+}
+
+/* 관리자 모드 스타일 */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.admin-tabs button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #e9ecef;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.admin-tabs button.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.admin-content {
+  display: none;
+}
+
+.admin-content.active {
+  display: block;
+}
+
+.quiz-form {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.admin-password-btn {
+  padding: 0.5rem 1rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.logout-btn {
+  padding: 0.5rem 1rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.primary-btn {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.quiz-list, .user-list, .history-list {
+  margin-top: 2rem;
+  max-width: 800px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.quiz-item, .user-item, .user-item {
+  background-color: #fff;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.user-item:hover {
+  transform: translateY(-2px);
+}
+
+.user-info {
+  margin-bottom: 1rem;
+}
+
+.user-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.action-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.reset-btn {
+  background-color: #198754;
+  color: white;
+}
+
+.reset-btn:hover {
+  background-color: #157347;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #bd2130;
+}
+
+.history-btn {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.history-btn:hover {
+  background-color: #0a58ca;
+}
+
+/* 풀이 기록 토글 스타일 */
+.history-content {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-top: 2px solid #dee2e6;
+}
+
+.history-content h4 {
+  margin-top: 0;
+  color: #0d6efd;
+}
+
+.history-items {
+  margin-top: 1rem;
+}
+
+.history-item {
+  background-color: white;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.correct {
+  color: #198754;
+  font-weight: bold;
+}
+
+.incorrect {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.history-item, .user-item, .history-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quiz-info, .user-info, .history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.user-info p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.action-btn {
+  padding: 0.25rem 0.75rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0.25rem;
+}
+
+.reset-btn {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.reset-btn:hover {
+  background-color: #e0a800;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.user-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  justify-content: flex-end;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.history-info p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .section {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  margin: 1rem 0;
   display: none;
-  margin-top: 20px;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -34,56 +283,80 @@ main {
   opacity: 1;
 }
 
+.section {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  margin: 1rem 0;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.section.active {
+  display: block;
+  opacity: 1;
+}
+
+.section h2 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
 input, button, select, textarea {
-  padding: 10px;
-  margin: 5px 10px;
+  padding: 12px;
+  margin: 8px 0;
   font-size: 16px;
   width: 100%;
   max-width: 400px;
   box-sizing: border-box;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  transition: all 0.3s ease;
 }
 
-textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-textarea[id^="option"] {
-  min-height: 50px;
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #007BFF;
+  box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
 }
 
 button {
   background-color: #007BFF;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
-  min-width: 100px;
-  padding: 10px 20px;
+  min-width: 120px;
+  padding: 12px 24px;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 button:hover {
   background-color: #0056b3;
+  transform: translateY(-1px);
 }
 
-button:focus, input:focus, select:focus, textarea:focus {
-  outline: 2px solid #007BFF;
-  outline-offset: 2px;
+button:active {
+  transform: translateY(0);
 }
 
 button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
-/* 버튼을 수직으로 배치 */
 #quizMode .button-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 1.5rem;
 }
 
 #quizMode button {
@@ -93,33 +366,95 @@ button:disabled {
 
 .logout-container {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
 }
 
-/* "정답입니다" 텍스트를 보기 아래로 이동 */
 #quizResult {
-  margin-top: 10px;
+  margin: 1.5rem 0;
   text-align: center;
   color: #28a745;
   font-weight: bold;
+  font-size: 1.2rem;
 }
 
 .logout-container button {
   display: block;
-  margin: 10px auto 0 auto;
+  margin: 1rem auto 0;
+  background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.logout-container button:hover {
+  background: linear-gradient(135deg, #c82333, #dc3545);
 }
 
 #quizList, #adminQuizList, #userList {
-  margin-top: 20px;
+  margin-top: 2rem;
   text-align: left;
 }
 
 .quiz-item, .user-item {
-  margin: 10px 0;
-  padding: 10px;
+  margin: 1rem 0;
+  padding: 1rem;
   background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+}
+
+.quiz-item, .quiz-item {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
   border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
+.quiz-content {
+  margin-bottom: 10px;
+}
+
+.quiz-content h4 {
+  margin-top: 0;
+  color: #333;
+}
+
+.options {
+  margin-top: 10px;
+  padding-left: 20px;
+}
+
+.options p {
+  margin: 5px 0;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  float: right;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.quiz-item:hover, .user-item:hover {
+  transform: translateX(5px);
+}
+
+.user-item button {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  margin-top: 1rem;
+}
+
+.user-item button:hover {
+  background: linear-gradient(135deg, #c82333, #dc3545);
 }
 
 .history-item {

@@ -9,25 +9,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script>
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyC_x2mrgYdkYLOu5OOkNsEskTFRnC8urfM",
-      authDomain: "pyqz-80d0a.firebaseapp.com",
-      databaseURL: "https://pyqz-80d0a-default-rtdb.firebaseio.com",
-      projectId: "pyqz-80d0a",
-      storageBucket: "pyqz-80d0a.firebasestorage.app",
-      messagingSenderId: "54702389083",
-      appId: "1:54702389083:web:9d9cf2ef71bfcface58c7e",
-      measurementId: "G-SBQS5WB6GF"
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
-    // Export for use in other scripts
-    window.firebase = firebase;
-    window.database = database;
+    // Firebase 초기화
+    window.addEventListener('load', () => {
+      // Firebase 설정은 script1.js에서 처리
+    });
   </script>
 </head>
 <body>
@@ -67,34 +52,56 @@
       <button onclick="showSection('home')">뒤로</button>
     </div>
 
-    <!-- 관리자 퀴즈 관리 -->
+    <!-- 관리자 모드 -->
     <div id="adminMode" class="section">
-      <h2>퀴즈 관리</h2>
-      <select id="quizType" onchange="toggleOptions()">
-        <option value="subjective">주관식</option>
-        <option value="objective">객관식</option>
-      </select>
-      <textarea id="quizQuestion" placeholder="문제" rows="4" required></textarea>
-      <input type="text" id="quizAnswer" placeholder="정답" required>
-      <div id="options" style="display: none;">
-        <input type="text" id="optionA" placeholder="보기 1" required>
-        <input type="text" id="optionB" placeholder="보기 2" required>
-        <input type="text" id="optionC" placeholder="보기 3" required>
-        <input type="text" id="optionD" placeholder="보기 4" required>
+      <div class="admin-header">
+        <h2>관리자 모드</h2>
+        <button onclick="changeAdminPassword()" class="admin-password-btn">비밀번호 변경</button>
       </div>
-      <button onclick="addQuiz()">문제 추가</button>
-      <div id="adminQuizList"></div>
-      <h2>퀴즈 푼 사용자</h2>
-      <div id="userList"></div>
-      <button onclick="showSection('adminHistory')">문제 풀이 기록 보기</button>
-      <button onclick="logoutAdmin()">로그아웃</button>
+      
+      <div class="admin-tabs">
+        <button onclick="showAdminTab('quiz')" class="active">문제 관리</button>
+        <button onclick="showAdminTab('users')">사용자 관리</button>
+        <button onclick="showAdminTab('history')">풀이 기록</button>
+      </div>
+
+      <div id="adminQuizTab" class="admin-content active">
+        <h3>문제 관리</h3>
+        <div class="quiz-form">
+          <select id="quizType" onchange="toggleOptions()">
+            <option value="subjective">주관식</option>
+            <option value="objective">객관식</option>
+          </select>
+          <textarea id="quizQuestion" placeholder="문제" rows="4" required></textarea>
+          <input type="text" id="quizAnswer" placeholder="정답" required>
+          <div id="options" style="display: none;">
+            <input type="text" id="optionA" placeholder="보기 1" required>
+            <input type="text" id="optionB" placeholder="보기 2" required>
+            <input type="text" id="optionC" placeholder="보기 3" required>
+            <input type="text" id="optionD" placeholder="보기 4" required>
+          </div>
+          <button onclick="addQuiz()" class="primary-btn">문제 추가</button>
+        </div>
+        <div id="adminQuizList" class="quiz-list"></div>
+      </div>
+
+      <div id="adminUsersTab" class="admin-content">
+        <h3>사용자 관리</h3>
+        <div id="userList" class="user-list"></div>
+      </div>
+
+      <div id="adminHistoryTab" class="admin-content">
+        <h3>풀이 기록</h3>
+        <div id="historyList" class="history-list"></div>
+      </div>
+
+      <div class="admin-actions">
+        <button onclick="logoutAdmin()" class="logout-btn">로그아웃</button>
+      </div>
     </div>
 
-    <div id="adminHistory" class="section" style="display: none;">
-      <h2>문제 풀이 기록</h2>
-      <div id="historyList"></div>
-      <button onclick="showSection('adminMode')">뒤로</button>
-    </div>
+    <!-- 퀴즈 풀이 기록 섹션 제거 -->
+    <!-- 이 섹션은 관리자 모드의 풀이 기록 탭에서만 표시됩니다 -->
 
     <!-- 퀴즈 풀이 -->
     <div id="quizMode" class="section">
