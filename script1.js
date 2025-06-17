@@ -47,9 +47,6 @@ async function initializeFirebase() {
     // Firebase 데이터베이스 초기화
     const database = window.firebase.database();
     
-    // userId 인덱스 설정
-    database.ref('/history').setIndex('userId');
-    
     return database;
   } catch (error) {
     console.error('Firebase 초기화 오류:', error);
