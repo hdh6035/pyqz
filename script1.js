@@ -7,6 +7,7 @@ let isAdminAuthenticated = false;
 
 // Firebase 초기화 함수
 async function initializeFirebase() {
+  console.log('Firebase 초기화 시작');
   try {
     if (!window.firebase) {
       throw new Error('Firebase SDK가 로드되지 않았습니다.');
@@ -27,6 +28,7 @@ async function initializeFirebase() {
       window.firebase.initializeApp(firebaseConfig);
     }
 
+    console.log('Firebase 초기화 완료');
     return window.firebase.database();
   } catch (error) {
     console.error('Firebase 초기화 오류:', error);
@@ -43,6 +45,7 @@ let adminRef;
 
 // Firebase 데이터 초기화 함수
 async function initializeFirebaseData() {
+  console.log('Firebase 데이터 초기화 시작');
   try {
     const [quizzesSnapshot, usersSnapshot, adminSnapshot] = await Promise.all([
       quizzesRef.once('value'),
@@ -50,7 +53,7 @@ async function initializeFirebaseData() {
       adminRef.once('value'),
     ]);
 
-    // 퀴즈 데이터 처리
+    console.log('퀴즈 데이터 로드 완료');
     const quizzesData = quizzesSnapshot.val();
     quizzes = Array.isArray(quizzesData)
       ? quizzesData.filter(
@@ -66,7 +69,7 @@ async function initializeFirebaseData() {
       saveToLocalStorage('remainingQuestions', remainingQuestions);
     }
 
-    // 사용자 데이터 처리
+    console.log('사용자 데이터 로드 완료');
     users = usersSnapshot.val() || {};
     Object.keys(users).forEach((userId) => {
       if (!users[userId].quizHistory) {
@@ -74,7 +77,7 @@ async function initializeFirebaseData() {
       }
     });
 
-    // 관리자 데이터 처리
+    console.log('관리자 데이터 로드 완료');
     const adminData = adminSnapshot.val();
     if (!adminData) {
       await adminRef.set({
@@ -83,10 +86,14 @@ async function initializeFirebaseData() {
       });
     }
 
-    // 히스토리는 필요 시 사용자별로 로드
+    // 히스토리는 현재 사용자만 로드
     if (currentUser) {
+      console.log(`사용자 ${currentUser} 히스토리 로드 시작`);
       await loadUserHistory(currentUser);
+      console.log(`사용자 ${currentUser} 히스토리 로드 완료`);
     }
+
+    console.log('Firebase 데이터 초기화 완료');
   } catch (error) {
     console.error('데이터 초기화 오류:', error);
     alert('데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
@@ -95,6 +102,7 @@ async function initializeFirebaseData() {
 
 // 사용자별 히스토리 로드 함수
 async function loadUserHistory(userId) {
+  console.log(`사용자 ${userId} 히스토리 로드 시도`);
   try {
     const snapshot = await historyRef.child(userId).once('value');
     const userHistory = snapshot.val() || {};
@@ -102,6 +110,7 @@ async function loadUserHistory(userId) {
       (history) => history.question && history.userAnswer
     );
     saveToLocalStorage('users', users);
+    console.log(`사용자 ${userId} 히스토리 로드 성공`);
   } catch (error) {
     console.error(`사용자 ${userId} 히스토리 로드 오류:`, error);
     users[userId].quizHistory = [];
@@ -110,6 +119,7 @@ async function loadUserHistory(userId) {
 
 // Firebase 설정 함수
 async function setupFirebase() {
+  console.log('Firebase 설정 시작');
   try {
     database = await initializeFirebase();
     quizzesRef = database.ref('quizzes');
@@ -117,6 +127,7 @@ async function setupFirebase() {
     historyRef = database.ref('history');
     adminRef = database.ref('admin');
     await initializeFirebaseData();
+    console.log('Firebase 설정 완료');
   } catch (error) {
     console.error('Firebase 설정 오류:', error);
     alert('Firebase 초기화 중 오류가 발생했습니다.');
@@ -128,10 +139,12 @@ window.addEventListener('load', setupFirebase);
 
 // 데이터 저장 함수
 async function saveToFirebase(key, data) {
+  console.log(`Firebase에 ${key} 데이터 저장 시도`);
   try {
     const ref = { quizzes: quizzesRef, users: usersRef, history: historyRef }[key];
     if (ref) {
       await ref.set(data);
+      console.log(`Firebase에 ${key} 데이터 저장 성공`);
       return true;
     }
     return false;
@@ -142,11 +155,14 @@ async function saveToFirebase(key, data) {
 }
 
 function saveToLocalStorage(key, data) {
+  console.log(`localStorage에 ${key} 데이터 저장 시도`);
   try {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(key, JSON.stringify(data));
+      console.log(`localStorage에 ${key} 데이터 저장 성공`);
+      return true;
     }
-    return true;
+    return false;
   } catch (e) {
     console.warn('localStorage 저장 실패:', e);
     return false;
@@ -173,6 +189,7 @@ function showSection(sectionId) {
 }
 
 function registerUser() {
+  console.log('회원가입 시도');
   const userName = document.getElementById('registerUserName').value.trim();
   const userId = document.getElementById('registerUserId').value.trim();
   const password = document.getElementById('registerUserPassword').value.trim();
@@ -214,9 +231,11 @@ function registerUser() {
   document.getElementById('registerResult').textContent = '회원가입이 완료되었습니다!';
   document.getElementById('registerResult').style.color = '#28a745';
   document.getElementById('registerResult').style.display = 'block';
+  console.log('회원가입 완료:', userId);
 }
 
 async function loginUser() {
+  console.log('로그인 시도');
   const username = document.getElementById('loginUserId').value;
   const password = document.getElementById('loginUserPassword').value;
 
@@ -285,6 +304,7 @@ async function loginUser() {
         })
         .join('');
     }
+    console.log('로그인 완료:', username);
   } catch (error) {
     console.error('로그인 오류:', error);
     alert('로그인 중 오류가 발생했습니다.');
@@ -292,6 +312,7 @@ async function loginUser() {
 }
 
 function loginAdmin() {
+  console.log('관리자 로그인 시도');
   const password = document.getElementById('adminPassword').value;
 
   if (!password) {
@@ -307,8 +328,10 @@ function loginAdmin() {
       displayAdminQuizzes();
       displayUserList();
       displayHistoryList();
+      console.log('관리자 로그인 성공');
     } else {
       alert('잘못된 비밀번호입니다.');
+      console.log('관리자 로그인 실패: 잘못된 비밀번호');
     }
   }).catch((error) => {
     console.error('관리자 인증 오류:', error);
@@ -317,6 +340,7 @@ function loginAdmin() {
 }
 
 function changeAdminPassword() {
+  console.log('관리자 비밀번호 변경 시도');
   if (!isAdminAuthenticated) {
     alert('먼저 관리자로 로그인하세요.');
     return;
@@ -337,6 +361,7 @@ function changeAdminPassword() {
           alert('관리자 비밀번호가 성공적으로 변경되었습니다!');
           isAdminAuthenticated = false;
           showSection('adminLogin');
+          console.log('관리자 비밀번호 변경 성공');
         }).catch((error) => {
           console.error('비밀번호 변경 오류:', error);
           alert('비밀번호 변경 중 오류가 발생했습니다.');
@@ -346,6 +371,7 @@ function changeAdminPassword() {
       }
     } else {
       alert('현재 비밀번호가 일치하지 않습니다.');
+      console.log('관리자 비밀번호 변경 실패: 잘못된 현재 비밀번호');
     }
   });
 }
@@ -356,6 +382,7 @@ function toggleOptions() {
 }
 
 function addQuiz() {
+  console.log('퀴즈 추가 시도');
   const question = document.getElementById('quizQuestion').value.trim();
   const answer = document.getElementById('quizAnswer').value.trim();
   const type = document.getElementById('quizType').value;
@@ -408,9 +435,11 @@ function addQuiz() {
   document.getElementById('quizType').value = 'subjective';
   toggleOptions();
   displayAdminQuizzes();
+  console.log('퀴즈 추가 완료');
 }
 
 function displayAdminQuizzes() {
+  console.log('관리자 퀴즈 목록 표시');
   const quizList = document.getElementById('adminQuizList');
   quizList.innerHTML = '';
 
@@ -438,6 +467,7 @@ function displayAdminQuizzes() {
 }
 
 function resetUserHistory(userId) {
+  console.log(`사용자 ${userId} 히스토리 초기화 시도`);
   if (users[userId]) {
     historyRef.child(userId).remove();
     users[userId].quizHistory = [];
@@ -454,10 +484,12 @@ function resetUserHistory(userId) {
 
     displayUserList();
     alert('사용자 기록이 초기화되었습니다.');
+    console.log(`사용자 ${userId} 히스토리 초기화 완료`);
   }
 }
 
 function deleteUser(userId) {
+  console.log(`사용자 ${userId} 삭제 시도`);
   if (!isAdminAuthenticated) {
     alert('관리자 권한이 필요합니다.');
     return;
@@ -470,10 +502,12 @@ function deleteUser(userId) {
     saveToFirebase('users', users);
     displayUserList();
     alert('계정이 성공적으로 삭제되었습니다.');
+    console.log(`사용자 ${userId} 삭제 완료`);
   }
 }
 
 function displayUserList() {
+  console.log('사용자 목록 표시');
   const userList = document.getElementById('userList');
   userList.innerHTML = '';
 
@@ -531,6 +565,7 @@ function displayUserList() {
 }
 
 function toggleUserHistory(button, userId) {
+  console.log(`사용자 ${userId} 히스토리 토글 시도`);
   const userDiv = button.closest('.user-item');
   const historyContent = userDiv.querySelector('.history-content');
   const historyVisible = userDiv.dataset.historyVisible === 'true';
@@ -562,14 +597,16 @@ function toggleUserHistory(button, userId) {
         })
         .join('');
       historyContent.querySelector('.history-items').innerHTML = historyItems || '<p>풀이 기록이 없습니다.</p>';
+      console.log(`사용자 ${userId} 히스토리 토글 성공`);
     }).catch((error) => {
-      console.error(`사용자 ${userId} 히스토리 로드 오류:`, error);
+      console.error(`사용자 ${userId} ힸ토리 로드 오류:`, error);
       historyContent.querySelector('.history-items').innerHTML = '<p>히스토리 데이터를 불러오지 못했습니다.</p>';
     });
   }
 }
 
 async function displayHistoryList() {
+  console.log('히스토리 목록 표시 시도');
   const historyList = document.getElementById('adminHistoryTab');
   if (!historyList) {
     console.error('historyList 엘리먼트를 찾을 수 없습니다.');
@@ -583,10 +620,12 @@ async function displayHistoryList() {
     const userIds = Object.keys(users);
     if (userIds.length === 0) {
       historyContent.innerHTML = '<p>등록된 사용자가 없습니다.</p>';
+      console.log('등록된 사용자 없음');
       return;
     }
 
     const historyPromises = userIds.map(async (userId) => {
+      console.log(`사용자 ${userId} 히스토리 로드 시도`);
       const snapshot = await historyRef.child(userId).once('value');
       return { userId, history: snapshot.val() || {} };
     });
@@ -596,6 +635,7 @@ async function displayHistoryList() {
 
     if (!hasHistory) {
       historyContent.innerHTML = '<p>풀이 기록이 없습니다.</p>';
+      console.log('풀이 기록 없음');
       return;
     }
 
@@ -626,6 +666,7 @@ async function displayHistoryList() {
       `;
       historyContent.appendChild(userDiv);
     });
+    console.log('히스토리 목록 표시 완료');
   } catch (error) {
     console.error('히스토리 목록 로드 오류:', error);
     historyContent.innerHTML = '<p>히스토리 데이터를 불러오지 못했습니다.</p>';
@@ -633,12 +674,14 @@ async function displayHistoryList() {
 }
 
 function deleteQuiz(index) {
+  console.log(`퀴즈 ${index} 삭제 시도`);
   if (confirm('정말로 이 문제를 삭제하시겠습니까?')) {
     quizzes.splice(index, 1);
     saveToFirebase('quizzes', quizzes)
       .then(() => {
         displayAdminQuizzes();
         alert('문제가 성공적으로 삭제되었습니다.');
+        console.log(`퀴즈 ${index} 삭제 완료`);
       })
       .catch((error) => {
         console.error('문제 삭제 오류:', error);
@@ -648,6 +691,7 @@ function deleteQuiz(index) {
 }
 
 function nextQuestion() {
+  console.log('다음 퀴즈 로드 시도');
   let quiz;
   let randomIndex;
   let optionsHTML = '';
@@ -668,6 +712,7 @@ function nextQuestion() {
       document.getElementById('nextButton').style.display = 'none';
       document.getElementById('endButton').style.display = 'inline-block';
       document.getElementById('quizResult').textContent = '';
+      console.log('모든 문제 완료');
       return;
     }
   }
@@ -711,9 +756,11 @@ function nextQuestion() {
 
   const radioButtons = document.querySelectorAll('input[name="option"]');
   radioButtons.forEach((radio) => (radio.checked = false));
+  console.log('다음 퀴즈 로드 완료');
 }
 
 function submitAnswer() {
+  console.log('답변 제출 시도');
   const quiz = quizzes[currentQuestionIndex];
   let userAnswer =
     quiz.type === 'subjective'
@@ -773,6 +820,7 @@ function submitAnswer() {
           document.getElementById('endButton').style.display = 'inline-block';
         }
       }
+      console.log('답변 제출 완료');
     }).catch((error) => {
       console.error('히스토리 저장 오류:', error);
       alert('풀이 기록 저장에 실패했습니다. 다시 시도해 주세요.');
@@ -781,21 +829,25 @@ function submitAnswer() {
 }
 
 function endQuiz() {
+  console.log('퀴즈 종료');
   currentUser = null;
   showSection('home');
 }
 
 function logoutUser() {
+  console.log('사용자 로그아웃');
   currentUser = null;
   showSection('home');
 }
 
 function logoutAdmin() {
+  console.log('관리자 로그아웃');
   isAdminAuthenticated = false;
   showSection('home');
 }
 
 function showAdminTab(tabId) {
+  console.log(`관리자 탭 ${tabId} 표시`);
   document.querySelectorAll('.admin-tabs button').forEach((btn) => {
     btn.classList.remove('active');
     if (btn.getAttribute('onclick').includes(tabId)) {
