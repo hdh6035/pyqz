@@ -562,11 +562,14 @@ function toggleUserHistory(button, userId) {
         })
         .join('');
       historyContent.querySelector('.history-items').innerHTML = historyItems || '<p>풀이 기록이 없습니다.</p>';
+    }).catch((error) => {
+      console.error(`사용자 ${userId} 히스토리 로드 오류:`, error);
+      historyContent.querySelector('.history-items').innerHTML = '<p>히스토리 데이터를 불러오지 못했습니다.</p>';
     });
   }
 }
 
-function displayHistoryList() {
+async function displayHistoryList() {
   const historyList = document.getElementById('adminHistoryTab');
   if (!historyList) {
     console.error('historyList 엘리먼트를 찾을 수 없습니다.');
@@ -576,16 +579,29 @@ function displayHistoryList() {
   historyList.innerHTML = '<div class="history-list"></div>';
   const historyContent = historyList.querySelector('.history-list');
 
-  historyRef.once('value').then((snapshot) => {
-    const historyData = snapshot.val() || {};
-    if (Object.keys(historyData).length === 0) {
+  try {
+    const userIds = Object.keys(users);
+    if (userIds.length === 0) {
+      historyContent.innerHTML = '<p>등록된 사용자가 없습니다.</p>';
+      return;
+    }
+
+    const historyPromises = userIds.map(async (userId) => {
+      const snapshot = await historyRef.child(userId).once('value');
+      return { userId, history: snapshot.val() || {} };
+    });
+
+    const historyDataArray = await Promise.all(historyPromises);
+    const hasHistory = historyDataArray.some(({ history }) => Object.keys(history).length > 0);
+
+    if (!hasHistory) {
       historyContent.innerHTML = '<p>풀이 기록이 없습니다.</p>';
       return;
     }
 
-    Object.entries(historyData).forEach(([userId, userHistory]) => {
+    historyDataArray.forEach(({ userId, history }) => {
       const user = users[userId];
-      if (!user) return;
+      if (!user || Object.keys(history).length === 0) return;
 
       const userDiv = document.createElement('div');
       userDiv.className = 'user-item';
@@ -593,7 +609,7 @@ function displayHistoryList() {
         <div class="user-info">
           <h3>${user.name} (${userId})의 풀이 기록</h3>
           <div class="history-items">
-            ${Object.values(userHistory)
+            ${Object.values(history)
               .map((h) => `
                 <div class="history-item">
                   <p><strong>문제:</strong> ${h.question}</p>
@@ -610,10 +626,10 @@ function displayHistoryList() {
       `;
       historyContent.appendChild(userDiv);
     });
-  }).catch((error) => {
+  } catch (error) {
     console.error('히스토리 목록 로드 오류:', error);
     historyContent.innerHTML = '<p>히스토리 데이터를 불러오지 못했습니다.</p>';
-  });
+  }
 }
 
 function deleteQuiz(index) {
