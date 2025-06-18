@@ -691,72 +691,111 @@ function deleteQuiz(index) {
 }
 
 function nextQuestion() {
-  console.log('다음 퀴즈 로드 시도');
+  // 문제 변수 선언
   let quiz;
   let randomIndex;
   let optionsHTML = '';
 
+  // 남은 문제가 없으면 새로운 세션 시작
   if (remainingQuestions.length === 0) {
+    // 기존 히스토리에서 오답 문제와 새로운 문제를 합침
     const userHistory = users[currentUser]?.quizHistory || [];
-    const incorrectQuestions = userHistory.filter((h) => !h.isCorrect).map((h) => h.question);
-    const correctQuestions = userHistory.filter((h) => h.isCorrect).map((h) => h.question);
-    remainingQuestions = quizzes
-      .filter((q) => incorrectQuestions.includes(q.question) || !userHistory.some((h) => h.question === q.question))
-      .filter((q) => !correctQuestions.includes(q.question));
+    
+    // 모든 문제를 풀었는지 확인
+    const allQuestionsAnswered = quizzes.every(q => userHistory.some(h => h.question === q.question));
+    
+    if (allQuestionsAnswered) {
+      // 모든 문제를 풀었을 때만 오답 문제와 새로운 문제를 섞어서 보여줌
+      const incorrectQuestions = userHistory
+        .filter(h => !h.isCorrect)
+        .map(h => h.question);
+      
+      remainingQuestions = quizzes.filter(q => 
+        incorrectQuestions.includes(q.question) || 
+        !userHistory.some(h => h.question === q.question)
+      );
+      
+      // 남은 문제가 없으면 완료 메시지 표시
+      if (remainingQuestions.length === 0) {
+        const userScore = users[currentUser] ? users[currentUser].score : 0;
+        document.getElementById('currentQuestion').textContent = `모든 문제를 풀었습니다! 당신의 점수: ${userScore}점`;
+        document.getElementById('userAnswer').style.display = 'none';
+        document.getElementById('submitButton').style.display = 'none';
+        document.getElementById('nextButton').style.display = 'none';
+        document.getElementById('endButton').style.display = 'inline-block';
+        document.getElementById('quizResult').textContent = '';
+        return;
+      }
+    } else {
+      // 아직 모든 문제를 풀지 않았다면 남은 문제만 보여줌
+      remainingQuestions = quizzes.filter(q => 
+        !userHistory.some(h => h.question === q.question)
+      );
+    }
+  }
 
-    if (remainingQuestions.length === 0) {
-      const userScore = users[currentUser]?.score || 0;
-      document.getElementById('currentQuestion').textContent = `모든 문제를 풀었습니다! 당신의 점수: ${userScore}점`;
+  // 남은 문제가 있는 경우에만 문제를 선택하고 표시
+  if (remainingQuestions.length > 0) {
+    randomIndex = Math.floor(Math.random() * remainingQuestions.length);
+    quiz = remainingQuestions[randomIndex];
+    currentQuestionIndex = quizzes.findIndex(q => q.question === quiz.question);
+
+    // 선택된 문제를 남은 문제 목록에서 제거
+    remainingQuestions.splice(randomIndex, 1);
+
+    // UI 초기화
+    document.getElementById('quizResult').textContent = '';
+    document.getElementById('userAnswer').value = '';
+    document.getElementById('submitButton').style.display = 'inline-block';
+    document.getElementById('nextButton').style.display = 'none';
+    document.getElementById('endButton').style.display = 'none';
+
+    // 문제 표시
+    if (quiz.type === 'objective') {
+      optionsHTML = `<p>${quiz.question.replace(/\n/g, '<br>')}</p>`;
+      optionsHTML += '<div class="options-container">';
+      
+      // 옵션 문자열 HTML 엔티티 변환 함수
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      quiz.options.forEach((opt, idx) => {
+        const safeVal = escapeHtml(opt);
+        optionsHTML += `
+          <label class="option-item">
+            <input type="radio" name="option" value="${safeVal}">
+            ${String.fromCharCode(97 + idx)}. ${opt.replace(/\n/g, ' ')}
+          </label>`;
+      });
+      optionsHTML += '</div>';
+      document.getElementById('currentQuestion').innerHTML = optionsHTML;
       document.getElementById('userAnswer').style.display = 'none';
-      document.getElementById('submitButton').style.display = 'none';
-      document.getElementById('nextButton').style.display = 'none';
-      document.getElementById('endButton').style.display = 'inline-block';
-      document.getElementById('quizResult').textContent = '';
-      console.log('모든 문제 완료');
-      return;
+    } else {
+      document.getElementById('currentQuestion').innerHTML = `<p>${quiz.question.replace(/\n/g, '<br>')}</p>`;
+      document.getElementById('userAnswer').style.display = 'inline-block';
     }
-  }
 
-  randomIndex = Math.floor(Math.random() * remainingQuestions.length);
-  quiz = remainingQuestions[randomIndex];
-  currentQuestionIndex = quizzes.findIndex((q) => q.question === quiz.question);
-
-  document.getElementById('quizResult').textContent = '';
-  document.getElementById('userAnswer').value = '';
-  document.getElementById('submitButton').style.display = 'inline-block';
-  document.getElementById('nextButton').style.display = 'none';
-  document.getElementById('endButton').style.display = 'none';
-
-  if (quiz.type === 'objective') {
-    optionsHTML = `<p>${quiz.question.replace(/\n/g, '<br>')}</p>`;
-    optionsHTML += '<div class="options-container">';
-    function escapeHtml(str) {
-      return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-    quiz.options.forEach((opt, idx) => {
-      const safeVal = escapeHtml(opt);
-      optionsHTML += `
-        <label class="option-item">
-          <input type="radio" name="option" value="${safeVal}">
-          ${String.fromCharCode(97 + idx)}. ${opt.replace(/\n/g, ' ')}
-        </label>`;
-    });
-    optionsHTML += '</div>';
-    document.getElementById('currentQuestion').innerHTML = optionsHTML;
-    document.getElementById('userAnswer').style.display = 'none';
+    // 라디오 버튼 초기화
+    const radioButtons = document.querySelectorAll('input[name="option"]');
+    radioButtons.forEach(radio => radio.checked = false);
+    console.log('다음 퀴즈 로드 완료');
   } else {
-    document.getElementById('currentQuestion').innerHTML = `<p>${quiz.question.replace(/\n/g, '<br>')}</p>`;
-    document.getElementById('userAnswer').style.display = 'inline-block';
+    // 남은 문제가 없을 때 완료 메시지 표시
+    const userScore = users[currentUser] ? users[currentUser].score : 0;
+    document.getElementById('currentQuestion').textContent = `모든 문제를 풀었습니다! 당신의 점수: ${userScore}점`;
+    document.getElementById('userAnswer').style.display = 'none';
+    document.getElementById('submitButton').style.display = 'none';
+    document.getElementById('nextButton').style.display = 'none';
+    document.getElementById('endButton').style.display = 'inline-block';
+    document.getElementById('quizResult').textContent = '';
+    return;
   }
-
-  const radioButtons = document.querySelectorAll('input[name="option"]');
-  radioButtons.forEach((radio) => (radio.checked = false));
-  console.log('다음 퀴즈 로드 완료');
 }
 
 function submitAnswer() {
@@ -799,6 +838,7 @@ function submitAnswer() {
         quizHistory: users[currentUser].quizHistory,
       });
 
+      // 문제를 풀었으니 남은 문제 목록에서 제거
       remainingQuestions = remainingQuestions.filter((q) => q.question !== quiz.question);
 
       document.getElementById('quizResult').textContent = isCorrect ? '정답입니다!' : '오답입니다.';
@@ -806,19 +846,13 @@ function submitAnswer() {
       document.getElementById('nextButton').style.display = 'inline-block';
       document.getElementById('endButton').style.display = 'inline-block';
 
+      // 남은 문제가 없으면 퀴즈 종료
       if (remainingQuestions.length === 0) {
-        const userHistory = users[currentUser]?.quizHistory || [];
-        const incorrectQuestions = userHistory.filter((h) => !h.isCorrect).map((h) => h.question);
-        const correctQuestions = userHistory.filter((h) => h.isCorrect).map((h) => h.question);
-        remainingQuestions = quizzes
-          .filter((q) => incorrectQuestions.includes(q.question) || !userHistory.some((h) => h.question === q.question))
-          .filter((q) => !correctQuestions.includes(q.question));
-
-        if (remainingQuestions.length === 0) {
-          document.getElementById('currentQuestion').textContent = `모든 문제를 풀었습니다! 당신의 점수: ${users[currentUser].score}점`;
-          document.getElementById('nextButton').style.display = 'none';
-          document.getElementById('endButton').style.display = 'inline-block';
-        }
+        const userScore = users[currentUser] ? users[currentUser].score : 0;
+        document.getElementById('currentQuestion').textContent = `모든 문제를 풀었습니다! 당신의 점수: ${userScore}점`;
+        document.getElementById('nextButton').style.display = 'none';
+        document.getElementById('endButton').style.display = 'inline-block';
+        return;
       }
       console.log('답변 제출 완료');
     }).catch((error) => {
