@@ -44,11 +44,10 @@ let adminRef;
 // Firebase 데이터 초기화 함수
 async function initializeFirebaseData() {
   try {
-    const [quizzesSnapshot, usersSnapshot, adminSnapshot, historySnapshot] = await Promise.all([
+    const [quizzesSnapshot, usersSnapshot, adminSnapshot] = await Promise.all([
       quizzesRef.once('value'),
       usersRef.once('value'),
       adminRef.once('value'),
-      historyRef.once('value'),
     ]);
 
     // 퀴즈 데이터 처리
@@ -84,24 +83,28 @@ async function initializeFirebaseData() {
       });
     }
 
-    // 히스토리 데이터 처리
-    const historyData = historySnapshot.val() || {};
-    Object.keys(users).forEach((userId) => {
-      users[userId].quizHistory = [];
-      const userHistory = historyData[userId] || {};
-      Object.values(userHistory).forEach((history) => {
-        if (history.question && history.userAnswer) {
-          const hasDuplicate = users[userId].quizHistory.some(
-            (h) => h.question === history.question && h.userAnswer === history.userAnswer
-          );
-          if (!hasDuplicate) {
-            users[userId].quizHistory.push(history);
-          }
-        }
-      });
-    });
+    // 히스토리는 필요 시 사용자별로 로드
+    if (currentUser) {
+      await loadUserHistory(currentUser);
+    }
   } catch (error) {
     console.error('데이터 초기화 오류:', error);
+    alert('데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+// 사용자별 히스토리 로드 함수
+async function loadUserHistory(userId) {
+  try {
+    const snapshot = await historyRef.child(userId).once('value');
+    const userHistory = snapshot.val() || {};
+    users[userId].quizHistory = Object.values(userHistory).filter(
+      (history) => history.question && history.userAnswer
+    );
+    saveToLocalStorage('users', users);
+  } catch (error) {
+    console.error(`사용자 ${userId} 히스토리 로드 오류:`, error);
+    users[userId].quizHistory = [];
   }
 }
 
@@ -116,6 +119,7 @@ async function setupFirebase() {
     await initializeFirebaseData();
   } catch (error) {
     console.error('Firebase 설정 오류:', error);
+    alert('Firebase 초기화 중 오류가 발생했습니다.');
   }
 }
 
@@ -130,11 +134,11 @@ async function saveToFirebase(key, data) {
       await ref.set(data);
       return true;
     }
+    return false;
   } catch (error) {
     console.error(`${key} 저장 오류:`, error);
     return false;
   }
-  return false;
 }
 
 function saveToLocalStorage(key, data) {
@@ -212,7 +216,7 @@ function registerUser() {
   document.getElementById('registerResult').style.display = 'block';
 }
 
-function loginUser() {
+async function loginUser() {
   const username = document.getElementById('loginUserId').value;
   const password = document.getElementById('loginUserPassword').value;
 
@@ -221,7 +225,8 @@ function loginUser() {
     return;
   }
 
-  usersRef.once('value').then((snapshot) => {
+  try {
+    const snapshot = await usersRef.once('value');
     const userData = snapshot.val();
     if (!userData || !userData[username]) {
       alert('등록되지 않은 사용자입니다. 회원가입을 먼저 해주세요.');
@@ -237,6 +242,7 @@ function loginUser() {
     currentUser = username;
     saveToLocalStorage('currentUser', currentUser);
 
+    await loadUserHistory(username);
     users[currentUser].quizHistory = users[currentUser].quizHistory || [];
     saveToLocalStorage('users', users);
 
@@ -279,10 +285,10 @@ function loginUser() {
         })
         .join('');
     }
-  }).catch((error) => {
+  } catch (error) {
     console.error('로그인 오류:', error);
     alert('로그인 중 오류가 발생했습니다.');
-  });
+  }
 }
 
 function loginAdmin() {
@@ -604,6 +610,9 @@ function displayHistoryList() {
       `;
       historyContent.appendChild(userDiv);
     });
+  }).catch((error) => {
+    console.error('히스토리 목록 로드 오류:', error);
+    historyContent.innerHTML = '<p>히스토리 데이터를 불러오지 못했습니다.</p>';
   });
 }
 
