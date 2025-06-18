@@ -6,47 +6,32 @@ let remainingQuestions = []; // 아직 풀지 않은 문제
 let quizHistory = [];
 
 // Firebase 초기화 함수
-let auth;
-
 async function initializeFirebase() {
   try {
+    // Firebase SDK가 로드되었는지 확인
     if (!window.firebase) {
       throw new Error('Firebase SDK가 로드되지 않았습니다.');
     }
-    
+
     // Firebase 초기화
     const firebaseConfig = {
-      apiKey: "AIzaSyDyYXxXxXxXxXxXxXxXxXxXxXxXxX",
-      authDomain: "python-quiz-app.firebaseapp.com",
-      databaseURL: "https://python-quiz-app-default-rtdb.firebaseio.com",
-      projectId: "python-quiz-app",
-      storageBucket: "python-quiz-app.appspot.com",
-      messagingSenderId: "1234567890",
-      appId: "1:1234567890:web:abcdef1234567890"
+      apiKey: "AIzaSyC_x2mrgYdkYLOu5OOkNsEskTFRnC8urfM",
+      authDomain: "pyqz-80d0a.firebaseapp.com",
+      databaseURL: "https://pyqz-80d0a-default-rtdb.firebaseio.com",
+      projectId: "pyqz-80d0a",
+      storageBucket: "pyqz-80d0a.firebasestorage.app",
+      messagingSenderId: "54702389083",
+      appId: "1:54702389083:web:9d9cf2ef71bfcface58c7e",
+      measurementId: "G-SBQS5WB6GF"
     };
-    
-    // Firebase 앱 초기화
+
+    // Firebase 앱이 이미 초기화되어 있는지 확인
     if (!window.firebase.apps.length) {
       window.firebase.initializeApp(firebaseConfig);
     }
-    
-    // Firebase Authentication 초기화
-    const auth = window.firebase.auth();
-    
-    // 인증 상태 변경 이벤트 리스너
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user.uid;
-        saveToLocalStorage('currentUser', currentUser);
-      } else {
-        currentUser = null;
-        saveToLocalStorage('currentUser', null);
-      }
-    });
-    
-    // Firebase 데이터베이스 초기화
+
+    // Firebase 데이터베이스 참조
     const database = window.firebase.database();
-    
     return database;
   } catch (error) {
     console.error('Firebase 초기화 오류:', error);
@@ -253,7 +238,7 @@ function registerUser() {
   document.getElementById('registerResult').style.display = 'block';
 }
 
-async function loginUser() {
+function loginUser() {
   const username = document.getElementById('loginUserId').value;
   const password = document.getElementById('loginUserPassword').value;
 
@@ -262,81 +247,94 @@ async function loginUser() {
     return;
   }
 
-  try {
-    // Firebase Authentication으로 로그인
-    const userCredential = await auth.signInWithEmailAndPassword(`${username}@quiz.com`, password);
-    const user = userCredential.user;
-
-    if (user) {
-      currentUser = user.uid;
-      saveToLocalStorage('currentUser', currentUser);
-
-      // 사용자 히스토리 초기화
-      users[currentUser].quizHistory = users[currentUser].quizHistory || [];
-      saveToLocalStorage('users', users);
-
-      // 남은 문제 초기화 (정답 문제 제외)
-      const userHistory = users[currentUser]?.quizHistory || [];
-      const correctQuestions = userHistory
-        .filter(h => h.isCorrect)
-        .map(h => h.question);
-      
-      remainingQuestions = quizzes.filter(q => 
-        !correctQuestions.includes(q.question)
-      ).map(q => ({ ...q }));
-      saveToLocalStorage('remainingQuestions', remainingQuestions);
-
-      // 퀴즈 풀이 화면으로 이동
-      showSection('quizMode');
-      nextQuestion();
-
-      // 푼 문제 기록 표시
-      const userHistoryDisplay = document.getElementById('userHistoryDisplay');
-      const userHistoryList = document.getElementById('userHistoryList');
-      if (userHistoryDisplay && userHistoryList) {
-        userHistoryDisplay.style.display = 'block';
-        userHistoryList.innerHTML = userHistory.map(history => {
-          let date;
-          if (typeof history.date === 'number') {
-            date = new Date(history.date * 1000);
-          } else if (typeof history.date === 'string') {
-            date = new Date(history.date);
-          } else if (history.date && typeof history.date.toDate === 'function') {
-            date = history.date.toDate();
-          } else {
-            date = new Date();
-          }
-
-          const options = { 
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-            timeZone: 'Asia/Seoul'
-          };
-
-          const formattedDate = date.toLocaleString('ko-KR', options);
-          
-          return `
-            <div class="user-history-item">
-              <div class="user-history-question">문제: ${history.question}</div>
-              <div class="user-history-answer">정답: ${history.answer}</div>
-              <div class="user-history-user-answer">내 답: ${history.userAnswer}</div>
-              <div class="user-history-date">날짜: ${formattedDate}</div>
-            </div>
-          `;
-        }).join('');
-      }
-    } else {
-      alert('로그인 실패했습니다.');
+  // Firebase에서 사용자 정보 확인
+  usersRef.once('value').then(snapshot => {
+    const userData = snapshot.val();
+    if (!userData || !userData[username]) {
+      alert('등록되지 않은 사용자입니다. 회원가입을 먼저 해주세요.');
+      return;
     }
-  } catch (error) {
+
+    const user = userData[username];
+    if (user.password !== password) {
+      alert('비밀번호가 틀렸습니다.');
+      return;
+    }
+
+    // 로그인 성공
+    currentUser = username;
+    saveToLocalStorage('currentUser', currentUser);
+
+    // 사용자 히스토리 초기화
+    users[currentUser].quizHistory = users[currentUser].quizHistory || [];
+    saveToLocalStorage('users', users);
+
+    // 남은 문제 초기화 (정답 문제 제외)
+    const userHistory = users[username]?.quizHistory || [];
+    const correctQuestions = userHistory
+      .filter(h => h.isCorrect)
+      .map(h => h.question);
+    
+    remainingQuestions = quizzes.filter(q => 
+      !correctQuestions.includes(q.question)
+    ).map(q => ({ ...q }));
+    saveToLocalStorage('remainingQuestions', remainingQuestions);
+
+    // 퀴즈 풀이 화면으로 이동
+    showSection('quizMode');
+    nextQuestion();
+
+    // 푼 문제 기록 표시
+    const userHistoryDisplay = document.getElementById('userHistoryDisplay');
+    const userHistoryList = document.getElementById('userHistoryList');
+    if (userHistoryDisplay && userHistoryList) {
+      userHistoryDisplay.style.display = 'block';
+      userHistoryList.innerHTML = userHistory.map(history => {
+        // Firebase에서 저장된 날짜를 ISO 문자열로 변환
+        let date;
+        if (typeof history.date === 'number') {
+          // 타임스탬프인 경우
+          date = new Date(history.date * 1000);
+        } else if (typeof history.date === 'string') {
+          // ISO 문자열인 경우
+          date = new Date(history.date);
+        } else if (history.date && typeof history.date.toDate === 'function') {
+          // Firebase Timestamp 객체인 경우
+          date = history.date.toDate();
+        } else {
+          // 기본 날짜
+          date = new Date();
+        }
+
+        // 한국 시간으로 변환
+        const options = { 
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+          timeZone: 'Asia/Seoul'
+        };
+
+        // 날짜 형식을 YYYY-MM-DD HH:mm:ss로 표시
+        const formattedDate = date.toLocaleString('ko-KR', options);
+        
+        return `
+          <div class="user-history-item">
+            <div class="user-history-question">문제: ${history.question}</div>
+            <div class="user-history-answer">정답: ${history.answer}</div>
+            <div class="user-history-user-answer">내 답: ${history.userAnswer}</div>
+            <div class="user-history-date">날짜: ${formattedDate}</div>
+          </div>
+        `;
+      }).join('');
+    }
+  }).catch(error => {
     console.error('로그인 오류:', error);
     alert('로그인 중 오류가 발생했습니다.');
-  }
+  });
 }
 
 function loginAdmin() {

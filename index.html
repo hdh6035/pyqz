@@ -5,28 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>파이썬코딩문제</title>
   <link rel="stylesheet" href="styles1.css">
-  <!-- Firebase 호스팅 -->
+  <!-- Firebase Configuration -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
-  <script>
-    // Firebase 초기화
-    const firebaseConfig = {
-      apiKey: "AIzaSyDyYXxXxXxXxXxXxXxXxXxXxXxXxX",
-      authDomain: "python-quiz-app.firebaseapp.com",
-      databaseURL: "https://python-quiz-app-default-rtdb.firebaseio.com",
-      projectId: "python-quiz-app",
-      storageBucket: "python-quiz-app.appspot.com",
-      messagingSenderId: "1234567890",
-      appId: "1:1234567890:web:abcdef1234567890",
-      measurementId: "G-XXXXXXXXXX" // Firebase Analytics를 사용하려면 measurementId 추가
-    };
-    
-    // Firebase 앱 초기화
-    firebase.initializeApp(firebaseConfig);
-    firebase.analytics();
-  </script>
   <script>
     // Firebase 초기화
     window.addEventListener('load', () => {
