@@ -293,11 +293,14 @@ async function loginUser() {
             timeZone: 'Asia/Seoul',
           };
           const formattedDate = date.toLocaleString('ko-KR', options);
+          // 정답/오답 표시 추가
+          const correctClass = history.isCorrect ? 'correct' : 'incorrect';
+          const correctText = history.isCorrect ? '정답' : '오답';
           return `
             <div class="user-history-item">
               <div class="user-history-question">문제: ${history.question}</div>
-              <div class="user-history-answer">정답: ${history.answer}</div>
               <div class="user-history-user-answer">내 답: ${history.userAnswer}</div>
+              <div class="user-history-result ${correctClass}">결과: ${correctText}</div>
               <div class="user-history-date">날짜: ${formattedDate}</div>
             </div>
           `;
@@ -568,40 +571,29 @@ function toggleUserHistory(button, userId) {
   console.log(`사용자 ${userId} 히스토리 토글 시도`);
   const userDiv = button.closest('.user-item');
   const historyContent = userDiv.querySelector('.history-content');
-  const historyVisible = userDiv.dataset.historyVisible === 'true';
+  const historyVisible = historyContent.style.display === 'none';
 
-  historyContent.style.display = historyVisible ? 'none' : 'block';
-  userDiv.dataset.historyVisible = !historyVisible;
+  historyContent.style.display = historyVisible ? 'block' : 'none';
+  button.textContent = historyVisible ? '풀이 기록' : '히스토리 숨기기';
 
   if (!historyVisible) {
-    historyRef.child(userId).once('value').then((snapshot) => {
-      const userHistory = snapshot.val() || {};
-      const historyItems = Object.values(userHistory)
-        .map((h) => {
-          const score = h.score || 0;
-          const date = h.timestamp ? new Date(h.timestamp) : null;
-          const timestamp = date && !isNaN(date.getTime()) ? date.toLocaleString() : '날짜 정보 없음';
-          const answer = h.answer || '정답 정보 없음';
-          const correctClass = h.isCorrect ? 'correct' : 'incorrect';
-          const correctText = h.isCorrect ? '정답' : '오답';
-          const answerDisplay = `<p><strong>답변:</strong> ${h.userAnswer || '답변 정보 없음'}</p>${
-            !h.isCorrect ? `<p><strong>정답:</strong> ${answer}</p>` : ''
-          }`;
-          return `<div class="history-item">
-            <p><strong>문제:</strong> ${h.question || '문제 정보 없음'}</p>
-            ${answerDisplay}
-            <p><strong>점수:</strong> ${score}점</p>
-            <p><strong>일시:</strong> ${timestamp}</p>
-            <p class="${correctClass}">${correctText}</p>
-          </div>`;
-        })
-        .join('');
-      historyContent.querySelector('.history-items').innerHTML = historyItems || '<p>풀이 기록이 없습니다.</p>';
-      console.log(`사용자 ${userId} 히스토리 토글 성공`);
-    }).catch((error) => {
-      console.error(`사용자 ${userId} ힸ토리 로드 오류:`, error);
-      historyContent.querySelector('.history-items').innerHTML = '<p>히스토리 데이터를 불러오지 못했습니다.</p>';
-    });
+    loadUserHistory(userId);
+  }
+}
+
+async function loadUserHistory(userId) {
+  console.log(`사용자 ${userId} 히스토리 로드 시도`);
+  try {
+    const snapshot = await historyRef.child(userId).once('value');
+    const userHistory = snapshot.val() || {};
+    users[userId].quizHistory = Object.values(userHistory).filter(
+      (history) => history.question && history.userAnswer
+    );
+    saveToLocalStorage('users', users);
+    console.log(`사용자 ${userId} 히스토리 로드 성공`);
+  } catch (error) {
+    console.error(`사용자 ${userId} 히스토리 로드 오류:`, error);
+    users[userId].quizHistory = [];
   }
 }
 
@@ -652,11 +644,11 @@ async function displayHistoryList() {
             ${Object.values(history)
               .map((h) => `
                 <div class="history-item">
-                  <p><strong>문제:</strong> ${h.question}</p>
-                  <p><strong>답변:</strong> ${h.userAnswer}</p>
-                  <p><strong>정답:</strong> ${h.answer}</p>
-                  <p><strong>점수:</strong> ${h.score}점</p>
-                  <p><strong>일시:</strong> ${new Date(h.timestamp).toLocaleString()}</p>
+                  <p><strong>문제:</strong> ${h.question || '문제 정보 없음'}</p>
+                  <p><strong>답변:</strong> ${h.userAnswer || '답변 정보 없음'}</p>
+                  <p><strong>정답:</strong> ${h.answer || '정답 정보 없음'}</p>
+                  <p><strong>점수:</strong> ${h.score || 0}점</p>
+                  <p><strong>일시:</strong> ${h.timestamp ? new Date(h.timestamp).toLocaleString() : '날짜 정보 없음'}</p>
                   <p class="${h.isCorrect ? 'correct' : 'incorrect'}">${h.isCorrect ? '정답' : '오답'}</p>
                 </div>
               `)
@@ -758,11 +750,11 @@ function nextQuestion() {
       // 옵션 문자열 HTML 엔티티 변환 함수
       function escapeHtml(str) {
         return str
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
+          .replace(/&/g, '&')
+          .replace(/</g, '<')
+          .replace(/>/g, '>')
+          .replace(/"/g, '"')
+          .replace(/'/g, '');
       }
 
       quiz.options.forEach((opt, idx) => {
