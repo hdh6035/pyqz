@@ -105,13 +105,54 @@ main {
   gap: 1rem;
 }
 
-.quiz-item, .user-item, .user-item {
-  background-color: #fff;
+.quiz-item, .user-item, .history-item {
+  background-color: white;
   padding: 1rem;
-  margin-bottom: 1rem;
+  margin: 1rem 0;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.result {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.result-label {
+  margin-right: 0.5rem;
+}
+
+.correct {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.incorrect {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.correct .result-value {
+  color: #155724;
+}
+
+.incorrect .result-value {
+  color: #721c24;
+}
+
+.result-display {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
+.result-display p {
+  margin: 0;
+  padding: 0.5rem;
 }
 
 .user-item:hover {
